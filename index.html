@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aldi Jati Mulya — Remote Sensing & WebGIS Researcher</title>
+<meta name="description" content="Researcher in Remote Sensing, Google Earth Engine, Climate Change, Disaster Mapping, and Spatial Analysis — South Sumatra, Indonesia">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Tabler Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+<style>
+:root {
+  --bg-deep:   #03080f;
+  --bg-card:   #060e1c;
+  --bg-raised: #0a1628;
+  --accent:    #00d4ff;
+  --accent2:   #0066ff;
+  --accent3:   #00ff88;
+  --text-pri:  #e8f4f8;
+  --text-sec:  rgba(200,225,240,0.55);
+  --text-dim:  rgba(200,225,240,0.28);
+  --border:    rgba(0,212,255,0.12);
+  --border-hi: rgba(0,212,255,0.35);
+  --font-head: 'Syne', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+  --font-body: 'DM Sans', sans-serif;
+  --r:         10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg-deep);
+  color: var(--text-pri);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 4px; }
+
+/* ── GRID BACKGROUND ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  height: 58px;
+  background: rgba(3,8,15,0.88);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--accent); letter-spacing: 2px;
+}
+.nav-links { display: flex; gap: 28px; list-style: none; }
+.nav-links a {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--text-sec); text-decoration: none; transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--accent); }
+.nav-right { display: flex; gap: 8px; align-items: center; }
+.lang-btn {
+  font-family: var(--font-mono); font-size: 11px;
+  padding: 4px 10px; border-radius: 4px; cursor: pointer;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-sec); transition: all 0.2s;
+}
+.lang-btn.active { background: rgba(0,212,255,0.1); color: var(--accent); border-color: var(--accent); }
+.nav-cta {
+  font-size: 11px; padding: 6px 16px; border-radius: 6px;
+  background: var(--accent); color: var(--bg-deep);
+  border: none; cursor: pointer; font-family: var(--font-body);
+  font-weight: 500; letter-spacing: 0.5px;
+  text-decoration: none; display: inline-block;
+}
+
+/* ── HERO ── */
+#hero {
+  min-height: 100vh; display: flex; align-items: center;
+  padding: 100px 40px 60px; position: relative; overflow: hidden;
+}
+.hero-glow-1 {
+  position: absolute; top: -200px; right: -200px;
+  width: 700px; height: 700px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,102,255,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-glow-2 {
+  position: absolute; bottom: -100px; left: 10%;
+  width: 400px; height: 400px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,255,136,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-inner { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; width: 100%; }
+.hero-label {
+  font-family: var(--font-mono); font-size: 11px; color: var(--accent);
+  letter-spacing: 3px; text-transform: uppercase; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.hero-label::before { content:''; width: 32px; height: 1px; background: var(--accent); }
+.hero-h1 {
+  font-family: var(--font-head); font-size: clamp(36px, 5vw, 64px);
+  font-weight: 700; line-height: 1.08; margin-bottom: 12px; color: #fff;
+}
+.hero-h1 .hl { color: var(--accent); }
+.hero-h1 .hl2 { color: var(--accent3); }
+.hero-name {
+  font-family: var(--font-mono); font-size: 13px;
+  color: var(--text-sec); margin-bottom: 20px; letter-spacing: 1px;
+}
+.hero-desc {
+  max-width: 560px; color: var(--text-sec); font-size: 15px;
+  line-height: 1.8; margin-bottom: 32px;
+}
+.hero-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 36px; }
+.htag {
+  font-size: 11px; padding: 5px 12px;
+  border: 1px solid var(--border-hi); color: var(--accent);
+  border-radius: 20px; letter-spacing: 0.5px;
+  background: rgba(0,212,255,0.05);
+}
+.hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn-pri {
+  padding: 12px 28px; background: var(--accent); color: var(--bg-deep);
+  border: none; border-radius: var(--r); font-weight: 500; font-size: 14px;
+  cursor: pointer; font-family: var(--font-body); transition: opacity 0.2s;
+  text-decoration: none; display: inline-block;
+}
+.btn-pri:hover { opacity: 0.85; }
+.btn-sec {
+  padding: 12px 28px; background: transparent; color: var(--accent);
+  border: 1px solid var(--border-hi); border-radius: var(--r); font-size: 14px;
+  cursor: pointer; font-family: var(--font-body); transition: background 0.2s;
+  text-decoration: none; display: inline-block;
+}
+.btn-sec:hover { background: rgba(0,212,255,0.06); }
+
+/* ── STATS BAR ── */
+.stats-bar {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  background: var(--bg-card); border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.stat {
+  padding: 24px; text-align: center;
+  border-right: 1px solid var(--border);
+}
+.stat:last-child { border-right: none; }
+.stat-n { font-family: var(--font-mono); font-size: 28px; color: var(--accent); font-weight: 700; }
+.stat-l { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+/* ── SECTIONS ── */
+section { padding: 80px 40px; position: relative; z-index: 1; }
+.section-alt { background: var(--bg-card); }
+.sec-label {
+  font-family: var(--font-mono); font-size: 11px; color: var(--accent);
+  letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px;
+}
+.sec-title {
+  font-family: var(--font-head); font-size: 32px; font-weight: 700;
+  margin-bottom: 8px; color: #fff;
+}
+.sec-sub { font-size: 14px; color: var(--text-sec); margin-bottom: 40px; max-width: 560px; }
+.container { max-width: 1100px; margin: 0 auto; }
+
+/* ── RESEARCH CARDS ── */
+.r-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 16px; }
+.r-card {
+  background: var(--bg-raised); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 22px; transition: border-color 0.25s, transform 0.25s;
+  cursor: pointer; position: relative; overflow: hidden;
+}
+.r-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transform: scaleX(0); transform-origin: left; transition: transform 0.3s;
+}
+.r-card:hover { border-color: var(--border-hi); transform: translateY(-3px); }
+.r-card:hover::before { transform: scaleX(1); }
+.r-icon {
+  width: 42px; height: 42px; border-radius: 8px;
+  background: rgba(0,212,255,0.08); display: flex; align-items: center;
+  justify-content: center; font-size: 20px; color: var(--accent); margin-bottom: 14px;
+}
+.r-title { font-family: var(--font-head); font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 8px; line-height: 1.4; }
+.r-desc { font-size: 13px; color: var(--text-sec); line-height: 1.65; }
+.r-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 14px; }
+.chip {
+  font-size: 10px; padding: 3px 8px;
+  background: rgba(0,212,255,0.07); color: rgba(0,212,255,0.75);
+  border-radius: 3px; letter-spacing: 0.3px;
+}
+.r-status { display: flex; align-items: center; gap: 5px; margin-top: 12px; }
+.dot { width: 6px; height: 6px; border-radius: 50%; }
+.dot-on  { background: var(--accent3); box-shadow: 0 0 6px var(--accent3); animation: blink 2s infinite; }
+.dot-off { background: var(--accent); }
+.dot-wip { background: #f59e0b; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:0.3} }
+.r-status span { font-size: 11px; }
+
+/* ── MAP SECTION ── */
+#map-container {
+  border: 1px solid var(--border); border-radius: var(--r);
+  overflow: hidden; height: 480px; position: relative;
+}
+.map-overlay-top {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 500;
+  background: linear-gradient(to bottom, rgba(3,8,15,0.85), transparent);
+  padding: 14px 18px; pointer-events: none;
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+.map-title-badge {
+  font-family: var(--font-mono); font-size: 11px; color: var(--accent);
+  letter-spacing: 1px;
+}
+.map-coords {
+  font-family: var(--font-mono); font-size: 10px; color: var(--text-dim);
+}
+.map-controls {
+  display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;
+}
+.map-btn {
+  font-size: 11px; padding: 6px 14px;
+  border: 1px solid var(--border); background: var(--bg-raised);
+  color: var(--text-sec); border-radius: 6px; cursor: pointer;
+  transition: all 0.2s; font-family: var(--font-body);
+}
+.map-btn.active, .map-btn:hover {
+  border-color: var(--accent); color: var(--accent);
+  background: rgba(0,212,255,0.07);
+}
+#map { height: 100%; width: 100%; }
+.leaflet-container { background: #060e1c; }
+
+/* Legend */
+.map-legend {
+  position: absolute; bottom: 16px; right: 16px; z-index: 500;
+  background: rgba(3,8,15,0.88); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px; min-width: 160px;
+  backdrop-filter: blur(10px);
+}
+.legend-title { font-family: var(--font-mono); font-size: 10px; color: var(--accent); letter-spacing: 1px; margin-bottom: 8px; }
+.legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.legend-color { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+.legend-label { font-size: 11px; color: var(--text-sec); }
+
+/* ── SKILLS ── */
+.skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 12px; }
+.skill-card {
+  background: var(--bg-raised); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 16px;
+}
+.skill-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.skill-name { font-size: 13px; color: var(--text-pri); }
+.skill-pct { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
+.skill-track { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; }
+.skill-fill {
+  height: 3px; border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ── PUBLICATIONS ── */
+.pub-list { display: flex; flex-direction: column; gap: 14px; }
+.pub-item {
+  background: var(--bg-raised); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 18px 22px;
+  display: flex; gap: 16px; align-items: flex-start;
+  transition: border-color 0.2s;
+}
+.pub-item:hover { border-color: var(--border-hi); }
+.pub-year {
+  font-family: var(--font-mono); font-size: 12px; color: var(--accent);
+  min-width: 40px; margin-top: 2px;
+}
+.pub-title { font-size: 14px; color: var(--text-pri); line-height: 1.5; margin-bottom: 5px; }
+.pub-journal { font-size: 12px; color: var(--text-dim); }
+.pub-tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.pub-tag {
+  font-size: 10px; padding: 2px 8px;
+  background: rgba(0,255,136,0.07); color: rgba(0,255,136,0.7);
+  border-radius: 3px;
+}
+
+/* ── CONTACT ── */
+.contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 12px; }
+.contact-card {
+  background: var(--bg-raised); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 18px; display: flex;
+  align-items: center; gap: 12px; transition: border-color 0.2s;
+  text-decoration: none;
+}
+.contact-card:hover { border-color: var(--border-hi); }
+.c-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: rgba(0,212,255,0.08); display: flex;
+  align-items: center; justify-content: center;
+  font-size: 18px; color: var(--accent); flex-shrink: 0;
+}
+.c-label { font-size: 11px; color: var(--text-dim); margin-bottom: 2px; }
+.c-val { font-size: 13px; color: var(--text-pri); }
+
+/* ── FOOTER ── */
+footer {
+  background: var(--bg-card); border-top: 1px solid var(--border);
+  padding: 24px 40px; display: flex;
+  justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 10px;
+}
+.footer-l { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
+.footer-r { font-size: 11px; color: var(--text-dim); }
+.footer-links { display: flex; gap: 20px; }
+.footer-links a { font-size: 11px; color: var(--text-sec); text-decoration: none; }
+.footer-links a:hover { color: var(--accent); }
+
+/* ── GEE NOTICE ── */
+.gee-notice {
+  background: rgba(0,212,255,0.04); border: 1px solid var(--border);
+  border-left: 3px solid var(--accent); border-radius: var(--r);
+  padding: 16px 20px; margin-bottom: 24px; display: flex;
+  gap: 12px; align-items: flex-start;
+}
+.gee-notice i { font-size: 20px; color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+.gee-notice-txt p { font-size: 13px; color: var(--text-sec); line-height: 1.6; }
+.gee-notice-txt strong { color: var(--text-pri); }
+
+/* ── WEBGIS LINK CARD ── */
+.webgis-card {
+  background: var(--bg-raised); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 28px 32px; margin-top: 32px;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 20px; flex-wrap: wrap;
+  background-image: radial-gradient(ellipse at 80% 50%, rgba(0,102,255,0.07) 0%, transparent 60%);
+}
+.webgis-card-txt p { font-size: 13px; color: var(--text-sec); margin-top: 6px; }
+.webgis-card-title { font-family: var(--font-head); font-size: 20px; color: #fff; font-weight: 600; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .nav-links { display: none; }
+  section { padding: 60px 20px; }
+  #hero { padding: 100px 20px 60px; }
+  .stats-bar { grid-template-columns: repeat(2,1fr); }
+  footer { padding: 20px; }
+}
+
+/* ── ANIMATIONS ── */
+.fade-in {
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-in.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">AJM · RESEARCH</div>
+  <ul class="nav-links">
+    <li><a href="#research" data-id="Riset" data-en="Research">Riset</a></li>
+    <li><a href="#map-section" data-id="Peta" data-en="Map">Peta</a></li>
+    <li><a href="webgis.html" data-id="WebGIS" data-en="WebGIS">WebGIS</a></li>
+    <li><a href="#publications" data-id="Publikasi" data-en="Publications">Publikasi</a></li>
+    <li><a href="#contact" data-id="Kontak" data-en="Contact">Kontak</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="lang-btn active" id="btn-id" onclick="setLang('id')">ID</button>
+    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+    <a href="webgis.html" class="nav-cta" data-id="Buka WebGIS" data-en="Open WebGIS">Buka WebGIS</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-glow-1"></div>
+  <div class="hero-glow-2"></div>
+  <div class="hero-inner">
+    <div class="hero-label" data-id="Peneliti Aktif · Sumatera Selatan, Indonesia" data-en="Active Researcher · South Sumatra, Indonesia">Peneliti Aktif · Sumatera Selatan, Indonesia</div>
+    <h1 class="hero-h1">
+      <span data-id="Penginderaan Jauh" data-en="Remote Sensing" class="hl">Penginderaan Jauh</span><br>
+      <span data-id="& Geofisika Spasial" data-en="& Spatial Geophysics">&amp; Geofisika Spasial</span>
+    </h1>
+    <p class="hero-name">— Aldi Jati Mulya, M.Si</p>
+    <p class="hero-desc" data-id="Mengintegrasikan teknologi Remote Sensing, Google Earth Engine, dan analisis spasial untuk pemantauan iklim, kebencanaan, serta lingkungan di wilayah tropis Indonesia." data-en="Integrating Remote Sensing, Google Earth Engine, and spatial analysis for climate monitoring, disaster risk assessment, and environmental management in tropical Indonesia.">
+      Mengintegrasikan teknologi Remote Sensing, Google Earth Engine, dan analisis spasial untuk pemantauan iklim, kebencanaan, serta lingkungan di wilayah tropis Indonesia.
+    </p>
+    <div class="hero-tags">
+      <span class="htag">Remote Sensing</span>
+      <span class="htag">Google Earth Engine</span>
+      <span class="htag">Climate Change</span>
+      <span class="htag">Disaster Mapping</span>
+      <span class="htag">Subsurface Analysis</span>
+      <span class="htag">WebGIS</span>
+      <span class="htag">NDVI / CHIRPS</span>
+    </div>
+    <div class="hero-btns">
+      <a href="webgis.html" class="btn-pri" data-id="Buka Platform WebGIS" data-en="Open WebGIS Platform">Buka Platform WebGIS</a>
+      <a href="#research" class="btn-sec" data-id="Lihat Riset" data-en="View Research">Lihat Riset</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-n">8+</div><div class="stat-l" data-id="Proyek Riset" data-en="Research Projects">Proyek Riset</div></div>
+  <div class="stat"><div class="stat-n">340</div><div class="stat-l" data-id="Followers LinkedIn" data-en="LinkedIn Followers">Followers LinkedIn</div></div>
+  <div class="stat"><div class="stat-n">4</div><div class="stat-l" data-id="Publikasi" data-en="Publications">Publikasi</div></div>
+  <div class="stat"><div class="stat-n">5+</div><div class="stat-l" data-id="Tahun Pengalaman" data-en="Years Experience">Tahun Pengalaman</div></div>
+</div>
+
+<!-- RESEARCH -->
+<section id="research" class="container" style="max-width:1100px;margin:0 auto;padding:80px 40px">
+  <div class="sec-label fade-in" data-id="Bidang Penelitian" data-en="Research Areas">Bidang Penelitian</div>
+  <h2 class="sec-title fade-in" data-id="Area Riset Utama" data-en="Main Research Areas">Area Riset Utama</h2>
+  <p class="sec-sub fade-in" data-id="Fokus pada penerapan teknologi penginderaan jauh untuk isu-isu lingkungan dan kebencanaan di Indonesia." data-en="Focused on applying remote sensing technology to environmental and disaster issues in Indonesia.">
+    Fokus pada penerapan teknologi penginderaan jauh untuk isu-isu lingkungan dan kebencanaan di Indonesia.
+  </p>
+  <div class="r-grid">
+    <div class="r-card fade-in">
+      <div class="r-icon"><i class="ti ti-cloud-storm"></i></div>
+      <div class="r-title" data-id="Pemantauan Iklim & Kekeringan" data-en="Climate & Drought Monitoring">Pemantauan Iklim & Kekeringan</div>
+      <div class="r-desc" data-id="Analisis spasio-temporal kekeringan menggunakan NDVI, CHIRPS, dan VCI berbasis Google Earth Engine di Kabupaten OKI, Sumatera Selatan." data-en="Spatio-temporal drought analysis using NDVI, CHIRPS, and VCI indices via Google Earth Engine in OKI Regency, South Sumatra.">
+        Analisis spasio-temporal kekeringan menggunakan NDVI, CHIRPS, dan VCI berbasis Google Earth Engine di Kabupaten OKI, Sumatera Selatan.
+      </div>
+      <div class="r-chips"><span class="chip">GEE</span><span class="chip">NDVI</span><span class="chip">CHIRPS</span><span class="chip">VCI</span></div>
+      <div class="r-status"><div class="dot dot-on"></div><span class="active-lbl" data-id="Aktif" data-en="Active">Aktif</span></div>
+    </div>
+    <div class="r-card fade-in">
+      <div class="r-icon"><i class="ti ti-flame"></i></div>
+      <div class="r-title" data-id="Pemetaan Kebakaran Lahan (KARHUTLA)" data-en="Wildfire & Land Fire Mapping">Pemetaan Kebakaran Lahan (KARHUTLA)</div>
+      <div class="r-desc" data-id="Peta bahaya KARHUTLA di OKI menggunakan citra multitemporal Landsat & Sentinel, analisis weighted overlay, dan SIG temporal 2020–2024." data-en="KARHUTLA hazard mapping in OKI using multitemporal Landsat & Sentinel imagery, weighted overlay analysis, and temporal GIS 2020–2024.">
+        Peta bahaya KARHUTLA di OKI menggunakan citra multitemporal Landsat & Sentinel, analisis weighted overlay, dan SIG temporal 2020–2024.
+      </div>
+      <div class="r-chips"><span class="chip">Landsat</span><span class="chip">Sentinel</span><span class="chip">ArcGIS</span><span class="chip">MODIS</span></div>
+      <div class="r-status"><div class="dot dot-off"></div><span data-id="Selesai" data-en="Completed">Selesai</span></div>
+    </div>
+    <div class="r-card fade-in">
+      <div class="r-icon"><i class="ti ti-layers-intersect"></i></div>
+      <div class="r-title" data-id="Analisis Subsurface & Gambut" data-en="Subsurface & Peatland Analysis">Analisis Subsurface & Gambut</div>
+      <div class="r-desc" data-id="Monitoring neraca air kawasan gambut dan identifikasi area rawan kekeringan berbasis integrasi data remote sensing dan GIS." data-en="Peatland water balance monitoring and drought-vulnerable area identification using integrated remote sensing and GIS data.">
+        Monitoring neraca air kawasan gambut dan identifikasi area rawan kekeringan berbasis integrasi data remote sensing dan GIS.
+      </div>
+      <div class="r-chips"><span class="chip">Peatland</span><span class="chip">Water Balance</span><span class="chip">SAR</span></div>
+      <div class="r-status"><div class="dot dot-on"></div><span data-id="Aktif" data-en="Active">Aktif</span></div>
+    </div>
+    <div class="r-card fade-in">
+      <div class="r-icon"><i class="ti ti-world"></i></div>
+      <div class="r-title" data-id="Platform WebGIS Interaktif" data-en="Interactive WebGIS Platform">Platform WebGIS Interaktif</div>
+      <div class="r-desc" data-id="Pengembangan WebGIS berbasis cloud untuk visualisasi dan diseminasi data geospasial iklim & kebencanaan kepada publik dan pengambil kebijakan." data-en="Cloud-based WebGIS for visualizing and disseminating geospatial climate & disaster data to the public and policy makers.">
+        Pengembangan WebGIS berbasis cloud untuk visualisasi dan diseminasi data geospasial iklim & kebencanaan kepada publik dan pengambil kebijakan.
+      </div>
+      <div class="r-chips"><span class="chip">Leaflet.js</span><span class="chip">GEE API</span><span class="chip">Python</span></div>
+      <div class="r-status"><div class="dot dot-wip"></div><span data-id="Pengembangan" data-en="In Development">Pengembangan</span></div>
+    </div>
+    <div class="r-card fade-in">
+      <div class="r-icon"><i class="ti ti-satellite"></i></div>
+      <div class="r-title" data-id="Perbandingan Citra Satelit NDVI" data-en="Satellite NDVI Comparison">Perbandingan Citra Satelit NDVI</div>
+      <div class="r-desc" data-id="Analisis komparatif nilai NDVI antara citra Landsat 8/9 dan Sentinel-2 untuk kajian kondisi vegetasi di wilayah tropis." data-en="Comparative analysis of NDVI values between Landsat 8/9 and Sentinel-2 imagery for vegetation condition studies in tropical regions.">
+        Analisis komparatif nilai NDVI antara citra Landsat 8/9 dan Sentinel-2 untuk kajian kondisi vegetasi di wilayah tropis.
+      </div>
+      <div class="r-chips"><span class="chip">Landsat 8/9</span><span class="chip">Sentinel-2</span><span class="chip">NDVI</span></div>
+      <div class="r-status"><div class="dot dot-off"></div><span data-id="Selesai" data-en="Completed">Selesai</span></div>
+    </div>
+    <div class="r-card fade-in">
+      <div class="r-icon"><i class="ti ti-leaf"></i></div>
+      <div class="r-title" data-id="Daya Dukung Jasa Ekosistem" data-en="Ecosystem Services Capacity">Daya Dukung Jasa Ekosistem</div>
+      <div class="r-desc" data-id="Kajian daya dukung dan daya tampung lingkungan berbasis jasa ekosistem di Kota Prabumulih tahun 2023." data-en="Study of environmental carrying capacity based on ecosystem services in Prabumulih City in 2023.">
+        Kajian daya dukung dan daya tampung lingkungan berbasis jasa ekosistem di Kota Prabumulih tahun 2023.
+      </div>
+      <div class="r-chips"><span class="chip">Ecosystem</span><span class="chip">Spatial</span><span class="chip">Prabumulih</span></div>
+      <div class="r-status"><div class="dot dot-off"></div><span data-id="Selesai" data-en="Completed">Selesai</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- MAP SECTION -->
+<section id="map-section" class="section-alt">
+  <div class="container">
+    <div class="sec-label fade-in" data-id="Visualisasi Spasial" data-en="Spatial Visualization">Visualisasi Spasial</div>
+    <h2 class="sec-title fade-in" data-id="Peta Interaktif Riset" data-en="Interactive Research Map">Peta Interaktif Riset</h2>
+    <p class="sec-sub fade-in" data-id="Lokasi area studi dan titik-titik riset yang telah dilakukan di wilayah Sumatera Selatan." data-en="Study area locations and research sites conducted in South Sumatra region.">
+      Lokasi area studi dan titik-titik riset yang telah dilakukan di wilayah Sumatera Selatan.
+    </p>
+
+    <div class="map-controls fade-in">
+      <button class="map-btn active" onclick="filterMap('all')" data-id="Semua Lokasi" data-en="All Sites">Semua Lokasi</button>
+      <button class="map-btn" onclick="filterMap('drought')" data-id="Kekeringan" data-en="Drought">Kekeringan</button>
+      <button class="map-btn" onclick="filterMap('fire')" data-id="KARHUTLA" data-en="Wildfire">KARHUTLA</button>
+      <button class="map-btn" onclick="filterMap('peat')" data-id="Gambut" data-en="Peatland">Gambut</button>
+    </div>
+
+    <div id="map-container" class="fade-in">
+      <div class="map-overlay-top">
+        <span class="map-title-badge">SOUTH SUMATRA · RESEARCH SITES</span>
+        <span class="map-coords" id="map-coords">LAT: — LON: —</span>
+      </div>
+      <div id="map"></div>
+      <div class="map-legend">
+        <div class="legend-title">LEGENDA</div>
+        <div class="legend-item"><div class="legend-color" style="background:#00d4ff"></div><div class="legend-label" data-id="Riset Kekeringan" data-en="Drought Research">Riset Kekeringan</div></div>
+        <div class="legend-item"><div class="legend-color" style="background:#ff4444"></div><div class="legend-label" data-id="KARHUTLA" data-en="Wildfire">KARHUTLA</div></div>
+        <div class="legend-item"><div class="legend-color" style="background:#00ff88"></div><div class="legend-label" data-id="Gambut / Subsurface" data-en="Peatland / Subsurface">Gambut / Subsurface</div></div>
+        <div class="legend-item"><div class="legend-color" style="background:#f59e0b"></div><div class="legend-label" data-id="Area Studi Lainnya" data-en="Other Study Areas">Area Studi Lainnya</div></div>
+      </div>
+    </div>
+
+    <div class="webgis-card fade-in">
+      <div class="webgis-card-txt">
+        <div class="webgis-card-title" data-id="Buka Platform WebGIS Lengkap" data-en="Open Full WebGIS Platform">Buka Platform WebGIS Lengkap</div>
+        <p data-id="Akses dashboard interaktif dengan layer data GEE, analisis NDVI real-time, dan visualisasi spasial lebih lengkap." data-en="Access the interactive dashboard with GEE data layers, real-time NDVI analysis, and more complete spatial visualization.">
+          Akses dashboard interaktif dengan layer data GEE, analisis NDVI real-time, dan visualisasi spasial lebih lengkap.
+        </p>
+      </div>
+      <a href="webgis.html" class="btn-pri" data-id="Buka WebGIS →" data-en="Open WebGIS →">Buka WebGIS →</a>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="container">
+    <div class="sec-label fade-in" data-id="Kemampuan Teknis" data-en="Technical Skills">Kemampuan Teknis</div>
+    <h2 class="sec-title fade-in" data-id="Keahlian & Teknologi" data-en="Skills & Technologies">Keahlian & Teknologi</h2>
+    <div class="skills-grid">
+      <div class="skill-card fade-in"><div class="skill-hdr"><span class="skill-name">Google Earth Engine</span><span class="skill-pct">92%</span></div><div class="skill-track"><div class="skill-fill" style="width:0" data-width="92%"></div></div></div>
+      <div class="skill-card fade-in"><div class="skill-hdr"><span class="skill-name">ArcGIS / QGIS</span><span class="skill-pct">88%</span></div><div class="skill-track"><div class="skill-fill" style="width:0" data-width="88%"></div></div></div>
+      <div class="skill-card fade-in"><div class="skill-hdr"><span class="skill-name">Remote Sensing</span><span class="skill-pct">91%</span></div><div class="skill-track"><div class="skill-fill" style="width:0" data-width="91%"></div></div></div>
+      <div class="skill-card fade-in"><div class="skill-hdr"><span class="skill-name">Python (GeoPandas, Rasterio)</span><span class="skill-pct">76%</span></div><div class="skill-track"><div class="skill-fill" style="width:0" data-width="76%"></div></div></div>
+      <div class="skill-card fade-in"><div class="skill-hdr"><span class="skill-name">Spatial Analysis</span><span class="skill-pct">86%</span></div><div class="skill-track"><div class="skill-fill" style="width:0" data-width="86%"></div></div></div>
+      <div class="skill-card fade-in"><div class="skill-hdr"><span class="skill-name">Leaflet.js / WebGIS</span><span class="skill-pct">68%</span></div><div class="skill-track"><div class="skill-fill" style="width:0" data-width="68%"></div></div></div>
+      <div class="skill-card fade-in"><div class="skill-hdr"><span class="skill-name">NDVI / VCI / CHIRPS</span><span class="skill-pct">90%</span></div><div class="skill-track"><div class="skill-fill" style="width:0" data-width="90%"></div></div></div>
+      <div class="skill-card fade-in"><div class="skill-hdr"><span class="skill-name">SAR / InSAR</span><span class="skill-pct">72%</span></div><div class="skill-track"><div class="skill-fill" style="width:0" data-width="72%"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PUBLICATIONS -->
+<section id="publications" class="section-alt">
+  <div class="container">
+    <div class="sec-label fade-in" data-id="Karya Ilmiah" data-en="Scientific Work">Karya Ilmiah</div>
+    <h2 class="sec-title fade-in" data-id="Publikasi & Riset" data-en="Publications & Research">Publikasi & Riset</h2>
+    <div class="pub-list">
+      <div class="pub-item fade-in">
+        <div class="pub-year">2025</div>
+        <div>
+          <div class="pub-title" data-id="Analisis Perbandingan NDVI pada Citra Satelit Landsat 8/9 dan Sentinel-2 untuk Kajian Kondisi Vegetasi" data-en="Comparative Analysis of NDVI in Landsat 8/9 and Sentinel-2 Satellite Imagery for Vegetation Condition Studies">Analisis Perbandingan NDVI pada Citra Satelit Landsat 8/9 dan Sentinel-2 untuk Kajian Kondisi Vegetasi</div>
+          <div class="pub-journal">GIS Insight Journal · Penginderaan Jauh Terapan</div>
+          <div class="pub-tags"><span class="pub-tag">NDVI</span><span class="pub-tag">Landsat</span><span class="pub-tag">Sentinel-2</span></div>
+        </div>
+      </div>
+      <div class="pub-item fade-in">
+        <div class="pub-year">2024</div>
+        <div>
+          <div class="pub-title" data-id="Analisis Spasio-Temporal Tingkat Kekeringan Menggunakan NDVI dan Curah Hujan Berbasis Google Earth Engine di Kabupaten OKI" data-en="Spatio-Temporal Analysis of Drought Level Using NDVI and Rainfall Based on Google Earth Engine in OKI Regency">Analisis Spasio-Temporal Tingkat Kekeringan Menggunakan NDVI dan Curah Hujan Berbasis Google Earth Engine di Kabupaten OKI</div>
+          <div class="pub-journal">Remote Sensing Applications · Sumatera Selatan</div>
+          <div class="pub-tags"><span class="pub-tag">GEE</span><span class="pub-tag">Drought</span><span class="pub-tag">CHIRPS</span></div>
+        </div>
+      </div>
+      <div class="pub-item fade-in">
+        <div class="pub-year">2024</div>
+        <div>
+          <div class="pub-title" data-id="Peta Bahaya Kebakaran Hutan dan Lahan (KARHUTLA) Kabupaten Ogan Komering Ilir 2020–2024" data-en="Forest and Land Fire Hazard Map (KARHUTLA) Ogan Komering Ilir Regency 2020–2024">Peta Bahaya Kebakaran Hutan dan Lahan (KARHUTLA) Kabupaten Ogan Komering Ilir 2020–2024</div>
+          <div class="pub-journal">Jurnal Penginderaan Jauh & SIG Indonesia</div>
+          <div class="pub-tags"><span class="pub-tag">KARHUTLA</span><span class="pub-tag">Hazard Map</span><span class="pub-tag">OKI</span></div>
+        </div>
+      </div>
+      <div class="pub-item fade-in">
+        <div class="pub-year">2023</div>
+        <div>
+          <div class="pub-title" data-id="Daya Dukung dan Daya Tampung Berbasis Jasa Ekosistem Kota Prabumulih" data-en="Carrying Capacity Based on Ecosystem Services of Prabumulih City">Daya Dukung dan Daya Tampung Berbasis Jasa Ekosistem Kota Prabumulih</div>
+          <div class="pub-journal">Jurnal Analisis Spasial Lingkungan Hidup · 2023</div>
+          <div class="pub-tags"><span class="pub-tag">Ecosystem</span><span class="pub-tag">Prabumulih</span><span class="pub-tag">Spatial</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="container">
+    <div class="sec-label fade-in" data-id="Hubungi Saya" data-en="Get In Touch">Hubungi Saya</div>
+    <h2 class="sec-title fade-in" data-id="Kontak & Kolaborasi" data-en="Contact & Collaboration">Kontak & Kolaborasi</h2>
+    <p class="sec-sub fade-in" data-id="Terbuka untuk kolaborasi riset, konsultasi GIS, dan proyek remote sensing." data-en="Open for research collaboration, GIS consulting, and remote sensing projects.">
+      Terbuka untuk kolaborasi riset, konsultasi GIS, dan proyek remote sensing.
+    </p>
+    <div class="contact-grid">
+      <a class="contact-card fade-in" href="https://www.linkedin.com/in/aldijatimulya/" target="_blank">
+        <div class="c-icon"><i class="ti ti-brand-linkedin"></i></div>
+        <div><div class="c-label">LinkedIn</div><div class="c-val">aldijatimulya</div></div>
+      </a>
+      <a class="contact-card fade-in" href="#">
+        <div class="c-icon"><i class="ti ti-mail"></i></div>
+        <div><div class="c-label">Email</div><div class="c-val">aldi@research.id</div></div>
+      </a>
+      <div class="contact-card fade-in">
+        <div class="c-icon"><i class="ti ti-map-pin"></i></div>
+        <div><div class="c-label" data-id="Lokasi" data-en="Location">Lokasi</div><div class="c-val">Prabumulih, Sumatera Selatan</div></div>
+      </div>
+      <a class="contact-card fade-in" href="https://www.linkedin.com/in/aldijatimulya/" target="_blank">
+        <div class="c-icon"><i class="ti ti-school"></i></div>
+        <div><div class="c-label" data-id="Institusi" data-en="Institution">Institusi</div><div class="c-val">Universitas Sriwijaya</div></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-l">© 2026 Aldi Jati Mulya · GIS Research Analyst</div>
+  <div class="footer-links">
+    <a href="index.html" data-id="Beranda" data-en="Home">Beranda</a>
+    <a href="webgis.html">WebGIS</a>
+    <a href="#publications" data-id="Publikasi" data-en="Publications">Publikasi</a>
+    <a href="#contact" data-id="Kontak" data-en="Contact">Kontak</a>
+  </div>
+  <div class="footer-r">Remote Sensing · Climate · Disaster · Subsurface</div>
+</footer>
+
+<script>
+/* ── LANGUAGE ── */
+let currentLang = 'id';
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('[data-id]').forEach(el => {
+    el.textContent = lang === 'id' ? el.dataset.id : el.dataset.en;
+  });
+  document.getElementById('btn-id').classList.toggle('active', lang==='id');
+  document.getElementById('btn-en').classList.toggle('active', lang==='en');
+  document.documentElement.lang = lang;
+}
+
+/* ── SCROLL FADE ── */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); }});
+}, { threshold: 0.12 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+/* ── SKILL BARS ── */
+const skillObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      e.target.querySelectorAll('.skill-fill').forEach(bar => {
+        bar.style.width = bar.dataset.width;
+      });
+    }
+  });
+}, { threshold: 0.3 });
+document.querySelectorAll('.skill-card').forEach(c => skillObs.observe(c));
+
+/* ── LEAFLET MAP ── */
+const researchSites = [
+  { lat:-3.45, lng:104.90, label:'Kabupaten OKI — Drought & KARHUTLA Research', type:'drought', color:'#00d4ff',
+    desc:'Analisis kekeringan spasio-temporal 2015–2024 menggunakan NDVI & CHIRPS via GEE' },
+  { lat:-3.60, lng:105.20, label:'OKI — KARHUTLA Hazard Zone', type:'fire', color:'#ff4444',
+    desc:'Peta bahaya kebakaran lahan 2020–2024, weighted overlay analysis' },
+  { lat:-3.30, lng:104.50, label:'OKI Peatland — Water Balance', type:'peat', color:'#00ff88',
+    desc:'Monitoring neraca air gambut, identifikasi kawasan rawan kekeringan' },
+  { lat:-3.78, lng:104.00, label:'Kota Prabumulih — Ecosystem Services', type:'other', color:'#f59e0b',
+    desc:'Kajian daya dukung & daya tampung berbasis jasa ekosistem 2023' },
+  { lat:-3.20, lng:105.50, label:'OKI — Vegetation Change Detection', type:'drought', color:'#00d4ff',
+    desc:'Deteksi perubahan tutupan vegetasi menggunakan citra multitemporal' },
+  { lat:-3.55, lng:103.80, label:'South Sumatra — Rainfall Analysis', type:'drought', color:'#00d4ff',
+    desc:'Analisis tren curah hujan CHIRPS 2015–2024 Sumatera Selatan' },
+  { lat:-3.90, lng:104.70, label:'Gambut OKI — SAR Analysis', type:'peat', color:'#00ff88',
+    desc:'Analisis lahan gambut menggunakan data SAR Sentinel-1' },
+];
+
+const map = L.map('map', {
+  center: [-3.5, 104.6],
+  zoom: 8,
+  zoomControl: true,
+  attributionControl: false
+});
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  maxZoom: 18
+}).addTo(map);
+
+map.on('mousemove', e => {
+  document.getElementById('map-coords').textContent =
+    `LAT: ${e.latlng.lat.toFixed(4)}  LON: ${e.latlng.lng.toFixed(4)}`;
+});
+
+let markers = [];
+function createMarker(site) {
+  const icon = L.divIcon({
+    className: '',
+    html: `<div style="
+      width:14px;height:14px;border-radius:50%;
+      background:${site.color};
+      border:2px solid rgba(255,255,255,0.3);
+      box-shadow:0 0 10px ${site.color}88;
+      cursor:pointer;
+    "></div>`,
+    iconSize: [14,14], iconAnchor: [7,7]
+  });
+  const m = L.marker([site.lat, site.lng], {icon})
+    .bindPopup(`
+      <div style="font-family:'DM Sans',sans-serif;min-width:200px">
+        <div style="font-size:13px;font-weight:500;margin-bottom:6px;color:#fff">${site.label}</div>
+        <div style="font-size:12px;color:#aaa;line-height:1.5">${site.desc}</div>
+        <div style="margin-top:8px">
+          <span style="font-size:10px;padding:2px 8px;background:rgba(0,212,255,0.15);color:#00d4ff;border-radius:3px">${site.type.toUpperCase()}</span>
+        </div>
+      </div>
+    `, {
+      className: 'custom-popup',
+      maxWidth: 260
+    });
+  markers.push({marker: m, type: site.type});
+  return m;
+}
+
+researchSites.forEach(s => createMarker(s).addTo(map));
+
+function filterMap(type) {
+  document.querySelectorAll('.map-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  markers.forEach(({marker, type: t}) => {
+    if(type === 'all' || t === type) { marker.addTo(map); }
+    else { map.removeLayer(marker); }
+  });
+}
+
+/* Popup styling */
+const style = document.createElement('style');
+style.textContent = `.custom-popup .leaflet-popup-content-wrapper{background:#0a1628;border:1px solid rgba(0,212,255,0.2);border-radius:8px;color:#e8f4f8;}.custom-popup .leaflet-popup-tip{background:#0a1628;}`;
+document.head.appendChild(style);
+</script>
+</body>
+</html>
